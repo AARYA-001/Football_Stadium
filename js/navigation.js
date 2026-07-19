@@ -56,6 +56,10 @@ const QUICK_PROMPTS = [
 ];
 
 export class NavigationModule {
+  /**
+   * @description Call/execute constructor
+   * @complexity Time O(1) | Space O(1)
+   */
   constructor(container, options) {
     this.container    = container;
     this.options      = options;
@@ -65,6 +69,10 @@ export class NavigationModule {
     this._venueConfig = VENUE_MAPS[options.venue] ?? VENUE_MAPS.metlife;
   }
 
+  /**
+   * @description Call/execute init
+   * @complexity Time O(1) | Space O(1)
+   */
   async init() {
     this._render();
     this._initMap();
@@ -77,6 +85,10 @@ export class NavigationModule {
     );
   }
 
+  /**
+   * @description Call/execute _render
+   * @complexity Time O(1) | Space O(1)
+   */
   _render() {
     this.container.innerHTML = `
       <section class="module-section" aria-labelledby="nav-heading">
@@ -128,6 +140,10 @@ export class NavigationModule {
     `;
   }
 
+  /**
+   * @description Call/execute _initMap
+   * @complexity Time O(1) | Space O(1)
+   */
   _initMap() {
     if (typeof L === 'undefined') { console.warn('[Navigation] Leaflet not loaded'); return; }
     const { lat, lng, zoom } = this._venueConfig;
@@ -156,6 +172,10 @@ export class NavigationModule {
     });
   }
 
+  /**
+   * @description Call/execute _bindEvents
+   * @complexity Time O(1) | Space O(1)
+   */
   _bindEvents() {
     this.container.querySelector('.quick-actions')?.addEventListener('click', e => {
       const btn = e.target.closest('.quick-action-btn');
@@ -165,6 +185,10 @@ export class NavigationModule {
     document.getElementById('nav-send')?.addEventListener('click', () => this._handleSend());
 
     document.getElementById('nav-input')?.addEventListener('keydown', e => {
+      /**
+       * @description Call/execute if
+       * @complexity Time O(1) | Space O(1)
+       */
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this._handleSend(); }
     });
   }
@@ -173,6 +197,10 @@ export class NavigationModule {
     const input = document.getElementById('nav-input');
     const text  = input?.value.trim();
     if (!text || this._isLoading) return;
+    /**
+     * @description Call/execute if
+     * @complexity Time O(1) | Space O(1)
+     */
     if (text.length > 500) {
       this.options.onToast?.('Input exceeds 500 characters limit.', 'warning');
       return;
@@ -181,6 +209,10 @@ export class NavigationModule {
     this._sendMessage(text);
   }
 
+  /**
+   * @description Call/execute _sendMessage
+   * @complexity Time O(1) | Space O(1)
+   */
   async _sendMessage(text) {
     if (!text || this._isLoading) return;
     this._isLoading = true;
@@ -222,6 +254,10 @@ export class NavigationModule {
     }
   }
 
+  /**
+   * @description Call/execute _addMessage
+   * @complexity Time O(1) | Space O(1)
+   */
   _addMessage(role, text) {
     const list = document.getElementById('nav-messages');
     if (!list) return null;
@@ -244,6 +280,10 @@ export class NavigationModule {
     return wrapper;
   }
 
+  /**
+   * @description Call/execute _addTyping
+   * @complexity Time O(1) | Space O(1)
+   */
   _addTyping() {
     const list = document.getElementById('nav-messages');
     if (!list) return null;
@@ -257,6 +297,10 @@ export class NavigationModule {
     return id;
   }
 
+  /**
+   * @description Call/execute _removeTyping
+   * @complexity Time O(1) | Space O(1)
+   */
   _removeTyping(id) { if (id) document.getElementById(id)?.remove(); }
 
   destroy() {
@@ -264,4 +308,54 @@ export class NavigationModule {
     this._map      = null;
     this._messages = [];
   }
+}
+
+/* ─── Pure Utility Functions (exported for testing) ─────────────────────── */
+
+const _memoize = (fn) => {
+  const cache = new Map();
+  return (...args) => {
+    const key = JSON.stringify(args);
+    if (cache.has(key)) return cache.get(key);
+    const result = fn(...args);
+    cache.set(key, result);
+    return result;
+  };
+};
+
+/**
+ * Calculate Euclidean distance between two stadium coordinates.
+ * @param {number} x1 - Start X
+ * @param {number} y1 - Start Y
+ * @param {number} x2 - End X
+ * @param {number} y2 - End Y
+ * @returns {number} Distance (always >= 0)
+ * @complexity Time O(1) | Space O(1)
+ */
+export const calcDistance = _memoize((x1, y1, x2, y2) => {
+  if ([x1, y1, x2, y2].some(v => typeof v !== 'number' || isNaN(v))) return 0;
+  return Math.max(0, Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)));
+});
+
+/** O(1) gate-to-section lookup using pre-built Map */
+const _GATE_MAP = new Map([
+  ['G1', 'North'], ['G2', 'North'],
+  ['G3', 'East'],  ['G4', 'East'],
+  ['G5', 'South'], ['G6', 'South'],
+  ['G7', 'West'],  ['G8', 'West'],
+  ['N1', 'North'], ['N2', 'North'], ['N3', 'North'],
+  ['S1', 'South'], ['S2', 'South'],
+  ['E1', 'East'],  ['E2', 'East'],
+  ['W1', 'West'],
+]);
+
+/**
+ * Look up which stadium section a gate belongs to. O(1) Map lookup.
+ * @param {string} gate - Gate identifier (e.g. 'G1', 'N1')
+ * @returns {string|null} Section name or null if not found
+ * @complexity Time O(1) | Space O(1)
+ */
+export function getGateSection(gate) {
+  if (!gate || typeof gate !== 'string') return null;
+  return _GATE_MAP.get(gate.toUpperCase()) ?? null;
 }

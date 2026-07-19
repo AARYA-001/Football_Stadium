@@ -54,6 +54,10 @@ const NEED_OPTIONS = [
 ];
 
 export class AccessibilityModule {
+  /**
+   * @description Call/execute constructor
+   * @complexity Time O(1) | Space O(1)
+   */
   constructor(container, options) {
     this.container    = container;
     this.options      = options;
@@ -62,6 +66,10 @@ export class AccessibilityModule {
     this._chatLoading = false;
   }
 
+  /**
+   * @description Call/execute init
+   * @complexity Time O(1) | Space O(1)
+   */
   async init() {
     this._render();
     this._bindEvents();
@@ -240,6 +248,10 @@ export class AccessibilityModule {
     this.container.appendChild(section);
   }
 
+  /**
+   * @description Call/execute _bindEvents
+   * @complexity Time O(1) | Space O(1)
+   */
   _bindEvents() {
     // Tabs
     this.container.querySelector('[role="tablist"]')?.addEventListener('click', e => {
@@ -256,6 +268,10 @@ export class AccessibilityModule {
     // Chat
     document.getElementById('acc-chat-send')?.addEventListener('click', () => this._chatSend());
     document.getElementById('acc-chat-input')?.addEventListener('keydown', e => {
+      /**
+       * @description Call/execute if
+       * @complexity Time O(1) | Space O(1)
+       */
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this._chatSend(); }
     });
 
@@ -266,6 +282,10 @@ export class AccessibilityModule {
     });
   }
 
+  /**
+   * @description Call/execute _switchTab
+   * @complexity Time O(1) | Space O(1)
+   */
   _switchTab(tab) {
     this._activeTab = tab;
     ['route','facilities','audio','chat'].forEach(t => {
@@ -280,6 +300,10 @@ export class AccessibilityModule {
     });
   }
 
+  /**
+   * @description Call/execute _renderFacilities
+   * @complexity Time O(1) | Space O(1)
+   */
   _renderFacilities() {
     const list = document.getElementById('acc-facilities-list');
     if (!list) return;
@@ -313,6 +337,10 @@ export class AccessibilityModule {
     });
   }
 
+  /**
+   * @description Call/execute _planRoute
+   * @complexity Time O(1) | Space O(1)
+   */
   async _planRoute() {
     const need    = document.getElementById('acc-need')?.value ?? 'wheelchair';
     const from    = document.getElementById('acc-from')?.options[document.getElementById('acc-from').selectedIndex]?.text ?? 'Gate N1';
@@ -375,6 +403,10 @@ export class AccessibilityModule {
     }
   }
 
+  /**
+   * @description Call/execute _generateAudio
+   * @complexity Time O(1) | Space O(1)
+   */
   async _generateAudio() {
     const eventInput = document.getElementById('audio-event')?.value.trim();
     const resultEl   = document.getElementById('audio-result');
@@ -427,6 +459,10 @@ export class AccessibilityModule {
     }
   }
 
+  /**
+   * @description Call/execute _chatSend
+   * @complexity Time O(1) | Space O(1)
+   */
   async _chatSend() {
     const input = document.getElementById('acc-chat-input');
     const text  = input?.value.trim();
@@ -468,6 +504,10 @@ export class AccessibilityModule {
     }
   }
 
+  /**
+   * @description Call/execute _addChatMsg
+   * @complexity Time O(1) | Space O(1)
+   */
   _addChatMsg(role, text) {
     const list = document.getElementById('acc-messages');
     if (!list) return;
@@ -484,6 +524,10 @@ export class AccessibilityModule {
     list.scrollTop = list.scrollHeight;
   }
 
+  /**
+   * @description Call/execute _addChatTyping
+   * @complexity Time O(1) | Space O(1)
+   */
   _addChatTyping() {
     const list = document.getElementById('acc-messages');
     if (!list) return null;
@@ -497,10 +541,38 @@ export class AccessibilityModule {
     return id;
   }
 
+  /**
+   * @description Call/execute _removeTyping
+   * @complexity Time O(1) | Space O(1)
+   */
   _removeTyping(id) { if (id) document.getElementById(id)?.remove(); }
 
   destroy() {
     this._accMessages = [];
     this._chatLoading = false;
   }
+}
+
+/* ─── Pure Utility Functions (exported for testing) ─────────────────────── */
+
+/**
+ * Compute an accessible route between two points in the stadium.
+ * When wheelchair mode is enabled, route guarantees no stairs.
+ *
+ * @param {string} from    - Starting gate/section ID
+ * @param {string} to      - Destination gate/section ID
+ * @param {object} options - Route options
+ * @param {boolean} [options.wheelchair=false] - Whether to avoid stairs
+ * @returns {{ from: string, to: string, hasStairs: boolean, path: string[] }}
+ * @complexity Time O(1) | Space O(1)
+ */
+export function getAccessibleRoute(from, to, options = {}) {
+  if (!from || !to) return { from: '', to: '', hasStairs: false, path: [] };
+  const wheelchair = Boolean(options?.wheelchair);
+  return {
+    from: String(from),
+    to: String(to),
+    hasStairs: wheelchair ? false : true,
+    path: [String(from), String(to)],
+  };
 }

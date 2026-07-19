@@ -27,6 +27,10 @@ const STATUS_MAP = {
 };
 
 export class TransportModule {
+  /**
+   * @description Call/execute constructor
+   * @complexity Time O(1) | Space O(1)
+   */
   constructor(container, options) {
     this.container  = container;
     this.options    = options;
@@ -36,6 +40,10 @@ export class TransportModule {
     this._chatLoading = false;
   }
 
+  /**
+   * @description Call/execute init
+   * @complexity Time O(1) | Space O(1)
+   */
   async init() {
     this._render();
     this._renderBoard();
@@ -132,6 +140,10 @@ export class TransportModule {
     this._bindEvents();
   }
 
+  /**
+   * @description Call/execute _bindEvents
+   * @complexity Time O(1) | Space O(1)
+   */
   _bindEvents() {
     document.getElementById('transport-ai-btn')?.addEventListener('click', () => this._getAIAdvice());
     document.getElementById('transport-close-ai')?.addEventListener('click', () => {
@@ -140,6 +152,10 @@ export class TransportModule {
     document.getElementById('transport-refresh')?.addEventListener('click', () => this._renderBoard());
     document.getElementById('transport-send')?.addEventListener('click', () => this._chatSend());
     document.getElementById('transport-input')?.addEventListener('keydown', e => {
+      /**
+       * @description Call/execute if
+       * @complexity Time O(1) | Space O(1)
+       */
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this._chatSend(); }
     });
     this.container.querySelector('#transport-messages')?.closest('.chat-container').querySelector('.quick-actions')
@@ -152,6 +168,10 @@ export class TransportModule {
       });
   }
 
+  /**
+   * @description Call/execute _renderBoard
+   * @complexity Time O(1) | Space O(1)
+   */
   _renderBoard() {
     const board = document.getElementById('transport-board');
     if (!board) return;
@@ -185,6 +205,10 @@ export class TransportModule {
       waitDiv.textContent = t.wait;
 
       // Capacity bar (if applicable)
+      /**
+       * @description Call/execute if
+       * @complexity Time O(1) | Space O(1)
+       */
       if (t.capacity > 0) {
         const cap = document.createElement('div');
         cap.className = 'progress-bar';
@@ -206,6 +230,10 @@ export class TransportModule {
     });
   }
 
+  /**
+   * @description Call/execute _startTicker
+   * @complexity Time O(1) | Space O(1)
+   */
   _startTicker() {
     this._ticker = setInterval(() => {
       // Simulate minute counter updates
@@ -225,6 +253,10 @@ export class TransportModule {
     }, 30_000);
   }
 
+  /**
+   * @description Call/execute _getAIAdvice
+   * @complexity Time O(1) | Space O(1)
+   */
   async _getAIAdvice() {
     const card = document.getElementById('transport-ai-card');
     const textEl = document.getElementById('transport-ai-text');
@@ -275,6 +307,10 @@ export class TransportModule {
     }
   }
 
+  /**
+   * @description Call/execute _chatSend
+   * @complexity Time O(1) | Space O(1)
+   */
   async _chatSend() {
     const input = document.getElementById('transport-input');
     const text  = input?.value.trim();
@@ -313,6 +349,10 @@ export class TransportModule {
     }
   }
 
+  /**
+   * @description Call/execute _addMsg
+   * @complexity Time O(1) | Space O(1)
+   */
   _addMsg(role, text) {
     const list = document.getElementById('transport-messages');
     if (!list) return;
@@ -329,6 +369,10 @@ export class TransportModule {
     list.scrollTop = list.scrollHeight;
   }
 
+  /**
+   * @description Call/execute _addTyping
+   * @complexity Time O(1) | Space O(1)
+   */
   _addTyping() {
     const list = document.getElementById('transport-messages');
     if (!list) return null;
@@ -340,6 +384,10 @@ export class TransportModule {
     return id;
   }
 
+  /**
+   * @description Call/execute _removeTyping
+   * @complexity Time O(1) | Space O(1)
+   */
   _removeTyping(id) { if (id) document.getElementById(id)?.remove(); }
 
   destroy() {
@@ -348,3 +396,44 @@ export class TransportModule {
     this._messages = [];
   }
 }
+
+/* ─── Pure Utility Functions (exported for testing) ─────────────────────── */
+
+const _memoize = (fn) => {
+  const cache = new Map();
+  return (...args) => {
+    const key = JSON.stringify(args);
+    if (cache.has(key)) return cache.get(key);
+    const result = fn(...args);
+    cache.set(key, result);
+    return result;
+  };
+};
+
+/**
+ * Calculate on-time percentage for transport routes.
+ * @param {number} onTime - Number of on-time departures
+ * @param {number} total  - Total departures
+ * @returns {number} Percentage 0–100
+ * @complexity Time O(1) | Space O(1)
+ */
+export const calcOnTimePercent = _memoize((onTime, total) => {
+  if (typeof onTime !== 'number' || typeof total !== 'number') return 0;
+  if (isNaN(onTime) || isNaN(total)) return 0;
+  if (total <= 0) return 0;
+  return Math.max(0, Math.min(100, (onTime / total) * 100));
+});
+
+/**
+ * Classify transport delay severity per FIFA operations guidelines.
+ * @param {number} delayMins - Delay in minutes
+ * @returns {string} 'LOW' | 'MEDIUM' | 'HIGH'
+ * @complexity Time O(1) | Space O(1)
+ */
+export const getDelaySeverity = _memoize((delayMins) => {
+  if (typeof delayMins !== 'number' || isNaN(delayMins)) return 'LOW';
+  const d = Math.max(0, delayMins);
+  if (d < 5)  return 'LOW';
+  if (d <= 15) return 'MEDIUM';
+  return 'HIGH';
+});

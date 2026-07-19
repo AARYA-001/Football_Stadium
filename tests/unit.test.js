@@ -69,7 +69,13 @@ function expect(actual) {
 
 /* ─── Import Modules ──────────────────────────────────────────────────────── */
 import { sanitizeInput, GeminiClient, LRUCache, TokenBucket } from '../js/gemini.js';
-import { getState } from '../js/app.js';
+import { getState, setTheme, getTheme, saveSettings, getSettings, ToastQueue } from '../js/app.js';
+import { getCrowdLevel, shouldAlert } from '../js/crowd.js';
+import { calcOnTimePercent, getDelaySeverity } from '../js/transport.js';
+import { calcWasteDiversion, calcCarbonSaved, addPledge } from '../js/sustainability.js';
+import { getIncidentPriority, deduplicateIncidents } from '../js/operations.js';
+import { calcDistance, getGateSection } from '../js/navigation.js';
+import { getAccessibleRoute } from '../js/accessibility.js';
 
 /* ────────────────────────────────────────────────────────────────────────── */
 /* ─── GROUP 1: Input Sanitisation Edge Cases (11 tests) ──────────────────── */
@@ -438,6 +444,117 @@ test('65. Accessibility: Service status description includes location details', 
   expect(desc.includes("Section 104")).toBeTrue();
 });
 
+/* --- Verbatim Crowd Module Tests (6 tests) --- */
+test("Crowd density HIGH when above 80%", () => {
+  expect(getCrowdLevel(85)).toBe("HIGH");
+});
+test("Crowd density MEDIUM when 50-80%", () => {
+  expect(getCrowdLevel(65)).toBe("MEDIUM");
+});
+test("Crowd density LOW when below 50%", () => {
+  expect(getCrowdLevel(30)).toBe("LOW");
+});
+test("Crowd alert triggered above threshold", () => {
+  expect(shouldAlert(90, 85)).toBeTrue();
+});
+test("Crowd alert not triggered below threshold", () => {
+  expect(shouldAlert(70, 85)).toBeFalse();
+});
+test("Crowd density exactly at threshold is MEDIUM", () => {
+  expect(getCrowdLevel(80)).toBe("MEDIUM");
+});
+
+/* --- Verbatim Transport Module Tests (5 tests) --- */
+test("On-time percentage calculation correct", () => {
+  expect(calcOnTimePercent(90, 100)).toBe(90);
+});
+test("On-time returns 0 for empty routes", () => {
+  expect(calcOnTimePercent(0, 0)).toBe(0);
+});
+test("Delay severity LOW under 5 mins", () => {
+  expect(getDelaySeverity(3)).toBe("LOW");
+});
+test("Delay severity MEDIUM 5-15 mins", () => {
+  expect(getDelaySeverity(10)).toBe("MEDIUM");
+});
+test("Delay severity HIGH above 15 mins", () => {
+  expect(getDelaySeverity(20)).toBe("HIGH");
+});
+
+/* --- Verbatim Sustainability Module Tests (4 tests) --- */
+test("Waste diversion percentage correct", () => {
+  expect(calcWasteDiversion(730, 1000)).toBe(73);
+});
+test("Carbon saved calculation correct", () => {
+  expect(calcCarbonSaved(100, 0.82)).toBeCloseTo(82, 1);
+});
+test("Eco pledge adds to total correctly", () => {
+  const pledges = addPledge([], "reduce_plastic");
+  expect(pledges.length).toBe(1);
+});
+test("Duplicate pledge not added", () => {
+  const pledges = addPledge(["reduce_plastic"], "reduce_plastic");
+  expect(pledges.length).toBe(1);
+});
+
+/* --- Verbatim Operations Module Tests (4 tests) --- */
+test("Incident priority CRITICAL for safety issues", () => {
+  expect(getIncidentPriority("medical")).toBe("CRITICAL");
+});
+test("Incident priority HIGH for crowd issues", () => {
+  expect(getIncidentPriority("crowd_surge")).toBe("HIGH");
+});
+test("Incident priority MEDIUM for facilities", () => {
+  expect(getIncidentPriority("facility")).toBe("MEDIUM");
+});
+test("Alert deduplication removes duplicate incidents", () => {
+  const incidents = deduplicateIncidents([
+    {id: 1, type: "medical"},
+    {id: 1, type: "medical"}
+  ]);
+  expect(incidents.length).toBe(1);
+});
+
+/* --- Verbatim Navigation Module Tests (4 tests) --- */
+test("Distance calculation between two gates positive", () => {
+  expect(calcDistance(0, 0, 3, 4)).toBe(5);
+});
+test("Same location returns distance 0", () => {
+  expect(calcDistance(0, 0, 0, 0)).toBe(0);
+});
+test("Gate lookup returns correct section", () => {
+  expect(getGateSection("G1")).toBe("North");
+});
+test("Invalid gate returns null", () => {
+  expect(getGateSection("INVALID")).toBeNull();
+});
+
+/* --- Verbatim Accessibility Module Tests (2 tests) --- */
+test("Accessible route avoids stairs", () => {
+  const route = getAccessibleRoute("G1", "G5", {wheelchair: true});
+  expect(route.hasStairs).toBeFalse();
+});
+test("Standard route may include stairs", () => {
+  const route = getAccessibleRoute("G1", "G5", {wheelchair: false});
+  expect(typeof route.hasStairs).toBe("boolean");
+});
+
+/* --- Verbatim App Controller Tests (3 tests) --- */
+test("Theme toggle switches correctly", () => {
+  setTheme("dark");
+  expect(getTheme()).toBe("dark");
+  setTheme("light");
+  expect(getTheme()).toBe("light");
+});
+test("Settings save and retrieve API key", () => {
+  saveSettings({apiKey: "test-key"});
+  expect(getSettings().apiKey).toBe("test-key");
+});
+test("Toast queue adds messages", () => {
+  const queue = new ToastQueue();
+  queue.add("Test message", "success");
+  expect(queue.size()).toBe(1);
+});
 
 /* ─── Final Summary ───────────────────────────────────────────────────────── */
 console.log('\n======================================');
@@ -452,3 +569,4 @@ if (failed > 0) {
   console.log('🚀 ALL TESTS PASSED SUCCESSFULLY! (0 FAILURES)');
   process.exit(0);
 }
+

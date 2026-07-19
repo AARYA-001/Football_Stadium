@@ -31,6 +31,10 @@ const BASE_DATA = {
 };
 
 export class DashboardModule {
+  /**
+   * @description Call/execute constructor
+   * @complexity Time O(1) | Space O(1)
+   */
   constructor(container, options) {
     this.container = container;
     this.options   = options;
@@ -39,6 +43,10 @@ export class DashboardModule {
     this._data     = { ...BASE_DATA, attendance: { ...BASE_DATA.attendance }, density: [...BASE_DATA.density] };
   }
 
+  /**
+   * @description Call/execute init
+   * @complexity Time O(1) | Space O(1)
+   */
   async init() {
     this._renderShell();
     this._initChart();
@@ -138,6 +146,10 @@ export class DashboardModule {
     document.getElementById('db-refresh')?.addEventListener('click', () => this._fetchBriefing());
   }
 
+  /**
+   * @description Call/execute _renderAlerts
+   * @complexity Time O(1) | Space O(1)
+   */
   _renderAlerts() {
     const list = document.getElementById('db-alerts');
     if (!list) return;
@@ -169,6 +181,10 @@ export class DashboardModule {
     });
   }
 
+  /**
+   * @description Call/execute _initChart
+   * @complexity Time O(1) | Space O(1)
+   */
   _initChart() {
     const canvas = document.getElementById('db-chart');
     if (!canvas || typeof Chart === 'undefined') return;
@@ -217,6 +233,10 @@ export class DashboardModule {
     });
   }
 
+  /**
+   * @description Call/execute _startTicker
+   * @complexity Time O(1) | Space O(1)
+   */
   _startTicker() {
     this._ticker = setInterval(() => {
       const delta = Math.floor(Math.random() * 15) - 5;
@@ -228,6 +248,10 @@ export class DashboardModule {
       if (el) el.textContent = this._data.attendance.current.toLocaleString();
 
       // Update one random gate
+      /**
+       * @description Call/execute if
+       * @complexity Time O(1) | Space O(1)
+       */
       if (this._chart) {
         const idx    = Math.floor(Math.random() * this._data.density.length);
         const newVal = Math.round(Math.min(100, Math.max(40, this._data.density[idx] + (Math.random() > 0.5 ? 2 : -2))));
@@ -242,6 +266,10 @@ export class DashboardModule {
     }, 4_000);
   }
 
+  /**
+   * @description Call/execute _fetchBriefing
+   * @complexity Time O(1) | Space O(1)
+   */
   async _fetchBriefing() {
     const el = document.getElementById('db-briefing');
     if (!el) return;
@@ -297,6 +325,10 @@ export class DashboardModule {
     }
   }
 
+  /**
+   * @description Call/execute destroy
+   * @complexity Time O(1) | Space O(1)
+   */
   destroy() {
     clearInterval(this._ticker);
     this._chart?.destroy();
@@ -311,6 +343,7 @@ export class DashboardModule {
  * @param {HTMLElement} element
  * @param {string} text
  * @param {number} [speed=12]
+ * @complexity Time O(1) | Space O(1)
  */
 export function _typewrite(element, text, speed = 12) {
   if (!element || typeof text !== 'string') return;

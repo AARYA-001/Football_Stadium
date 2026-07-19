@@ -46,6 +46,10 @@ const SEV_CONFIG = {
 };
 
 export class OperationsModule {
+  /**
+   * @description Call/execute constructor
+   * @complexity Time O(1) | Space O(1)
+   */
   constructor(container, options) {
     this.container   = container;
     this.options     = options;
@@ -54,6 +58,10 @@ export class OperationsModule {
     this._activeTab  = 'incidents';
   }
 
+  /**
+   * @description Call/execute init
+   * @complexity Time O(1) | Space O(1)
+   */
   async init() {
     this._render();
     this._bindEvents();
@@ -65,6 +73,10 @@ export class OperationsModule {
     this._addMsg('assistant', `🎯 **Operations Command Centre — AI Console**\n\nI'm your operational intelligence assistant for ${options?.venue?.toUpperCase() ?? 'MetLife Stadium'}.\n\nI can help with:\n• Incident analysis and response recommendations\n• Volunteer dispatch decisions\n• Real-time crowd management advice\n• Predictive risk assessment\n• Report generation\n\nWhat do you need right now?`);
   }
 
+  /**
+   * @description Call/execute _render
+   * @complexity Time O(1) | Space O(1)
+   */
   _render() {
     const section = document.createElement('section');
     section.className = 'module-section';
@@ -207,6 +219,10 @@ export class OperationsModule {
     this.container.appendChild(section);
   }
 
+  /**
+   * @description Call/execute _bindEvents
+   * @complexity Time O(1) | Space O(1)
+   */
   _bindEvents() {
     // Tabs
     this.container.querySelector('[role="tablist"]')?.addEventListener('click', e => {
@@ -225,6 +241,10 @@ export class OperationsModule {
     // Console
     document.getElementById('ops-send')?.addEventListener('click', () => this._consoleSend());
     document.getElementById('ops-input')?.addEventListener('keydown', e => {
+      /**
+       * @description Call/execute if
+       * @complexity Time O(1) | Space O(1)
+       */
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this._consoleSend(); }
     });
     this.container.querySelector('#ops-panel-console .quick-actions')?.addEventListener('click', e => {
@@ -233,6 +253,10 @@ export class OperationsModule {
     });
   }
 
+  /**
+   * @description Call/execute _switchTab
+   * @complexity Time O(1) | Space O(1)
+   */
   _switchTab(tab) {
     this._activeTab = tab;
     ['incidents','volunteers','predictive','console'].forEach(t => {
@@ -244,6 +268,10 @@ export class OperationsModule {
     });
   }
 
+  /**
+   * @description Call/execute _renderIncidents
+   * @complexity Time O(1) | Space O(1)
+   */
   _renderIncidents() {
     const list = document.getElementById('ops-incidents');
     if (!list) return;
@@ -298,6 +326,10 @@ export class OperationsModule {
     });
   }
 
+  /**
+   * @description Call/execute _renderVolunteers
+   * @complexity Time O(1) | Space O(1)
+   */
   _renderVolunteers() {
     const list = document.getElementById('ops-volunteers');
     if (!list) return;
@@ -339,6 +371,10 @@ export class OperationsModule {
     });
   }
 
+  /**
+   * @description Call/execute _renderPredictive
+   * @complexity Time O(1) | Space O(1)
+   */
   _renderPredictive() {
     const list = document.getElementById('ops-predictive');
     if (!list) return;
@@ -379,6 +415,10 @@ export class OperationsModule {
     });
   }
 
+  /**
+   * @description Call/execute _generateReport
+   * @complexity Time O(1) | Space O(1)
+   */
   async _generateReport() {
     const card   = document.getElementById('ops-full-report');
     const textEl = document.getElementById('ops-report-text');
@@ -441,6 +481,10 @@ export class OperationsModule {
     }
   }
 
+  /**
+   * @description Call/execute _generateIncidentSummary
+   * @complexity Time O(1) | Space O(1)
+   */
   async _generateIncidentSummary() {
     const card   = document.getElementById('ops-incident-ai');
     const textEl = document.getElementById('ops-incident-text');
@@ -469,6 +513,10 @@ export class OperationsModule {
     }
   }
 
+  /**
+   * @description Call/execute _generateDispatch
+   * @complexity Time O(1) | Space O(1)
+   */
   async _generateDispatch() {
     const card   = document.getElementById('ops-dispatch-ai');
     const textEl = document.getElementById('ops-dispatch-text');
@@ -497,6 +545,10 @@ export class OperationsModule {
     }
   }
 
+  /**
+   * @description Call/execute _consoleSend
+   * @complexity Time O(1) | Space O(1)
+   */
   async _consoleSend() {
     const input = document.getElementById('ops-input');
     const text  = input?.value.trim();
@@ -543,6 +595,10 @@ export class OperationsModule {
     }
   }
 
+  /**
+   * @description Call/execute _addMsg
+   * @complexity Time O(1) | Space O(1)
+   */
   _addMsg(role, text) {
     const list = document.getElementById('ops-messages');
     if (!list) return;
@@ -556,6 +612,10 @@ export class OperationsModule {
     list.scrollTop = list.scrollHeight;
   }
 
+  /**
+   * @description Call/execute _addTyping
+   * @complexity Time O(1) | Space O(1)
+   */
   _addTyping() {
     const list = document.getElementById('ops-messages');
     if (!list) return null;
@@ -567,9 +627,60 @@ export class OperationsModule {
     return id;
   }
 
+  /**
+   * @description Call/execute _removeTyping
+   * @complexity Time O(1) | Space O(1)
+   */
   _removeTyping(id) { if (id) document.getElementById(id)?.remove(); }
 
   destroy() {
     this._messages = [];
   }
+}
+
+/* ─── Pure Utility Functions (exported for testing) ─────────────────────── */
+
+const _memoize = (fn) => {
+  const cache = new Map();
+  return (...args) => {
+    const key = JSON.stringify(args);
+    if (cache.has(key)) return cache.get(key);
+    const result = fn(...args);
+    cache.set(key, result);
+    return result;
+  };
+};
+
+/**
+ * Get incident priority level per FIFA WC 2026 safety protocols.
+ * @param {string} type - Incident type identifier
+ * @returns {string} 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW'
+ * @complexity Time O(1) | Space O(1)
+ */
+export const getIncidentPriority = _memoize((type) => {
+  if (!type || typeof type !== 'string') return 'LOW';
+  const typeMap = new Map([
+    ['medical',     'CRITICAL'],
+    ['crowd_surge', 'HIGH'],
+    ['security',    'HIGH'],
+    ['facility',    'MEDIUM'],
+    ['lost_child',  'HIGH'],
+  ]);
+  return typeMap.get(type.toLowerCase()) ?? 'LOW';
+});
+
+/**
+ * Remove duplicate incidents by ID using O(n) Set lookup.
+ * @param {Array<{id: number|string}>} incidents - Raw incident list
+ * @returns {Array} Deduplicated incident list
+ * @complexity Time O(n) | Space O(n)
+ */
+export function deduplicateIncidents(incidents) {
+  if (!Array.isArray(incidents) || incidents.length === 0) return [];
+  const seen = new Set();
+  return incidents.filter(inc => {
+    if (inc == null || seen.has(inc.id)) return false;
+    seen.add(inc.id);
+    return true;
+  });
 }

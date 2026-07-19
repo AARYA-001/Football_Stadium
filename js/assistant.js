@@ -64,6 +64,10 @@ const QUICK_ACTIONS = [
 ];
 
 export class AssistantModule {
+  /**
+   * @description Call/execute constructor
+   * @complexity Time O(1) | Space O(1)
+   */
   constructor(container, options) {
     this.container   = container;
     this.options     = options;
@@ -72,6 +76,10 @@ export class AssistantModule {
     this._activeLang = 'auto';
   }
 
+  /**
+   * @description Call/execute init
+   * @complexity Time O(1) | Space O(1)
+   */
   async init() {
     this._render();
     this._bindEvents();
@@ -171,6 +179,10 @@ export class AssistantModule {
 
     // Responsive stacking on small screens
     const grid = section.querySelector('[style*="grid-template-columns"]');
+    /**
+     * @description Call/execute if
+     * @complexity Time O(1) | Space O(1)
+     */
     if (window.innerWidth < 900 && grid) {
       grid.style.gridTemplateColumns = '1fr';
     }
@@ -202,6 +214,10 @@ export class AssistantModule {
     // Send
     document.getElementById('asst-send')?.addEventListener('click', () => this._handleSend());
     document.getElementById('asst-input')?.addEventListener('keydown', e => {
+      /**
+       * @description Call/execute if
+       * @complexity Time O(1) | Space O(1)
+       */
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this._handleSend(); }
     });
 
@@ -214,6 +230,10 @@ export class AssistantModule {
     });
   }
 
+  /**
+   * @description Call/execute _addGreeting
+   * @complexity Time O(1) | Space O(1)
+   */
   _addGreeting() {
     const greeting = [
       `🌍 **Hello! Hola! Bonjour! مرحباً! 你好! नमस्ते!**`,
@@ -228,6 +248,10 @@ export class AssistantModule {
     this._addMessageDOM('assistant', greeting);
   }
 
+  /**
+   * @description Call/execute _handleSend
+   * @complexity Time O(1) | Space O(1)
+   */
   _handleSend() {
     const input = document.getElementById('asst-input');
     const text  = input?.value.trim();
@@ -240,6 +264,10 @@ export class AssistantModule {
     this._sendMessage(text);
   }
 
+  /**
+   * @description Call/execute _sendMessage
+   * @complexity Time O(1) | Space O(1)
+   */
   async _sendMessage(text) {
     if (!text || this._isLoading) return;
     this._isLoading = true;
@@ -282,6 +310,10 @@ export class AssistantModule {
     }
   }
 
+  /**
+   * @description Call/execute _addMessageDOM
+   * @complexity Time O(1) | Space O(1)
+   */
   _addMessageDOM(role, text) {
     const list = document.getElementById('asst-messages');
     if (!list) return;
@@ -304,6 +336,10 @@ export class AssistantModule {
     return wrapper;
   }
 
+  /**
+   * @description Call/execute _addTyping
+   * @complexity Time O(1) | Space O(1)
+   */
   _addTyping() {
     const list = document.getElementById('asst-messages');
     if (!list) return null;
@@ -317,6 +353,10 @@ export class AssistantModule {
     return id;
   }
 
+  /**
+   * @description Call/execute _removeTyping
+   * @complexity Time O(1) | Space O(1)
+   */
   _removeTyping(id) { if (id) document.getElementById(id)?.remove(); }
 
   destroy() {

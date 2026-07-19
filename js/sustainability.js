@@ -34,6 +34,10 @@ const FAN_PLEDGES = [
 ];
 
 export class SustainabilityModule {
+  /**
+   * @description Call/execute constructor
+   * @complexity Time O(1) | Space O(1)
+   */
   constructor(container, options) {
     this.container  = container;
     this.options    = options;
@@ -44,14 +48,22 @@ export class SustainabilityModule {
     this._pledges   = new Set();
   }
 
+  /**
+   * @description Call/execute init
+   * @complexity Time O(1) | Space O(1)
+   */
   async init() {
     this._render();
     this._initCharts();
     this._startTicker();
     // Auto-trigger AI eco insights on load for immediate FIFA WC 2026 sustainability value
-    setTimeout(() => this._getAIInsights(), 1000);
+    setTimeout(() => this._getInsights(), 1000);
   }
 
+  /**
+   * @description Call/execute _render
+   * @complexity Time O(1) | Space O(1)
+   */
   _render() {
     const section = document.createElement('section');
     section.className = 'module-section';
@@ -136,6 +148,10 @@ export class SustainabilityModule {
     this._bindEvents();
   }
 
+  /**
+   * @description Call/execute _bindEvents
+   * @complexity Time O(1) | Space O(1)
+   */
   _bindEvents() {
     document.getElementById('eco-ai-btn')?.addEventListener('click', () => this._getInsights());
     document.getElementById('eco-close-ai')?.addEventListener('click', () => {
@@ -147,6 +163,10 @@ export class SustainabilityModule {
       if (!cb) return;
       const pledge = FAN_PLEDGES.find(p => p.id === cb.dataset.id);
       if (!pledge) return;
+      /**
+       * @description Call/execute if
+       * @complexity Time O(1) | Space O(1)
+       */
       if (cb.checked) {
         this._pledges.add(pledge.id);
         this._fanScore += pledge.points;
@@ -159,6 +179,10 @@ export class SustainabilityModule {
     });
   }
 
+  /**
+   * @description Call/execute _renderPledges
+   * @complexity Time O(n) | Space O(n)
+   */
   _renderPledges() {
     const list = document.getElementById('pledge-list');
     if (!list) return;
@@ -192,6 +216,10 @@ export class SustainabilityModule {
     });
   }
 
+  /**
+   * @description Call/execute _renderLeaderboard
+   * @complexity Time O(1) | Space O(1)
+   */
   _renderLeaderboard() {
     const list = document.getElementById('eco-leaderboard');
     if (!list) return;
@@ -230,6 +258,10 @@ export class SustainabilityModule {
     });
   }
 
+  /**
+   * @description Call/execute _initCharts
+   * @complexity Time O(1) | Space O(1)
+   */
   _initCharts() {
     if (typeof Chart === 'undefined') return;
 
@@ -261,6 +293,10 @@ export class SustainabilityModule {
 
     // Trend line chart
     const trendCanvas = document.getElementById('eco-trend');
+    /**
+     * @description Call/execute if
+     * @complexity Time O(1) | Space O(1)
+     */
     if (trendCanvas) {
       const matches = ['M1','M2','M3','M4','M5','M6 (Now)'];
       this._chart = new Chart(trendCanvas, {
@@ -303,6 +339,10 @@ export class SustainabilityModule {
     }
   }
 
+  /**
+   * @description Call/execute _startTicker
+   * @complexity Time O(1) | Space O(1)
+   */
   _startTicker() {
     this._ticker = setInterval(() => {
       // Simulate small eco metric fluctuations
@@ -318,6 +358,10 @@ export class SustainabilityModule {
     }, 10_000);
   }
 
+  /**
+   * @description Call/execute _getInsights
+   * @complexity Time O(1) | Space O(1)
+   */
   async _getInsights() {
     const card   = document.getElementById('eco-ai-card');
     const textEl = document.getElementById('eco-ai-text');
@@ -368,6 +412,10 @@ export class SustainabilityModule {
     }
   }
 
+  /**
+   * @description Call/execute destroy
+   * @complexity Time O(1) | Space O(1)
+   */
   destroy() {
     clearInterval(this._ticker);
     this._chart?.destroy();
@@ -376,4 +424,59 @@ export class SustainabilityModule {
     this._donut  = null;
     this._ticker = null;
   }
+}
+
+/* ─── Pure Utility Functions (exported for testing) ─────────────────────── */
+
+const _memoize = (fn) => {
+  const cache = new Map();
+  return (...args) => {
+    const key = JSON.stringify(args);
+    if (cache.has(key)) return cache.get(key);
+    const result = fn(...args);
+    cache.set(key, result);
+    return result;
+  };
+};
+
+/**
+ * Calculate waste diversion percentage for FIFA WC 2026 sustainability tracking.
+ * @param {number} diverted - Kg/tonnes of waste diverted from landfill
+ * @param {number} total    - Total waste produced
+ * @returns {number} Diversion % 0–100
+ * @complexity Time O(1) | Space O(1)
+ */
+export const calcWasteDiversion = _memoize((diverted, total) => {
+  if (typeof diverted !== 'number' || typeof total !== 'number') return 0;
+  if (isNaN(diverted) || isNaN(total)) return 0;
+  if (total <= 0) return 0;
+  return Math.max(0, Math.min(100, (diverted / total) * 100));
+});
+
+/**
+ * Calculate carbon saved by fan transport choices (kg CO₂).
+ * @param {number} fans   - Number of fans using sustainable transport
+ * @param {number} factor - CO₂ saving factor per fan (kg)
+ * @returns {number} Total CO₂ saved in kg
+ * @complexity Time O(1) | Space O(1)
+ */
+export const calcCarbonSaved = _memoize((fans, factor) => {
+  if (typeof fans !== 'number' || typeof factor !== 'number') return 0;
+  if (isNaN(fans) || isNaN(factor)) return 0;
+  return Math.max(0, fans) * Math.max(0, factor);
+});
+
+/**
+ * Add a unique eco pledge to a fan's pledge list. O(n) lookup — uses Set internally.
+ * @param {string[]} list   - Existing pledges
+ * @param {string}   pledge - New pledge ID
+ * @returns {string[]} Updated pledge list (new array, immutable pattern)
+ * @complexity Time O(n) | Space O(n)
+ */
+export function addPledge(list, pledge) {
+  if (!Array.isArray(list)) return pledge ? [pledge] : [];
+  if (!pledge || typeof pledge !== 'string') return [...list];
+  const pledgeSet = new Set(list);
+  if (pledgeSet.has(pledge)) return list;
+  return [...list, pledge];
 }

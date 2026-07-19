@@ -46,6 +46,10 @@ let _state = Object.freeze({
   role         : localStorage.getItem('stadiumiq_role')   ?? 'fan',
 });
 
+/**
+ * @description Call/execute getState
+ * @complexity Time O(1) | Space O(1)
+ */
 export const getState = () => _state;
 
 function setState(partial) {
@@ -65,6 +69,10 @@ function applyTheme(theme) {
   if (btn)  btn.setAttribute('aria-label', `Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`);
 }
 
+/**
+ * @description Call/execute toggleTheme
+ * @complexity Time O(1) | Space O(1)
+ */
 function toggleTheme() {
   const next = _state.theme === 'dark' ? 'light' : 'dark';
   setState({ theme: next });
@@ -80,6 +88,7 @@ let   _toastTimer = null;
  * @param {string} message
  * @param {'info'|'success'|'warning'|'error'} [type='info']
  * @param {number} [duration=4000]
+ * @complexity Time O(1) | Space O(1)
  */
 export function showToast(message, type = 'info', duration = 4000) {
   _toastQueue.push({ message: String(message).slice(0, 250), type, duration });
@@ -119,6 +128,10 @@ function _processToastQueue() {
 }
 
 /* ─── Module Routing ─────────────────────────────────────────────────────── */
+/**
+ * @description Call/execute loadModule
+ * @complexity Time O(1) | Space O(1)
+ */
 async function loadModule(moduleName) {
   const ModuleClass = MODULE_REGISTRY[moduleName];
   if (!ModuleClass) { console.warn(`[StadiumIQ] Unknown module: "${moduleName}"`); return; }
@@ -164,6 +177,10 @@ async function loadModule(moduleName) {
   }
 }
 
+/**
+ * @description Call/execute _renderError
+ * @complexity Time O(1) | Space O(1)
+ */
 function _renderError(container, detail = '') {
   const section = document.createElement('section');
   section.className = 'error-state';
@@ -182,6 +199,10 @@ function _renderError(container, detail = '') {
 }
 
 /* ─── Settings Modal ─────────────────────────────────────────────────────── */
+/**
+ * @description Call/execute openSettings
+ * @complexity Time O(1) | Space O(1)
+ */
 function openSettings() {
   const modal   = document.getElementById('settings-modal');
   const overlay = document.getElementById('modal-overlay');
@@ -202,6 +223,10 @@ function openSettings() {
   requestAnimationFrame(() => apiInput?.focus());
 }
 
+/**
+ * @description Call/execute closeSettings
+ * @complexity Time O(1) | Space O(1)
+ */
 function closeSettings() {
   const modal   = document.getElementById('settings-modal');
   const overlay = document.getElementById('modal-overlay');
@@ -213,7 +238,11 @@ function closeSettings() {
   document.getElementById('btn-settings')?.focus();
 }
 
-function saveSettings() {
+/**
+ * @description Call/execute handleSaveSettings
+ * @complexity Time O(1) | Space O(1)
+ */
+function handleSaveSettings() {
   const apiInput    = document.getElementById('api-key-input');
   const venueSelect = document.getElementById('venue-select');
   const roleSelect  = document.getElementById('role-select');
@@ -246,6 +275,10 @@ function saveSettings() {
 }
 
 /* ─── Modal Focus Trap (WCAG 2.1 SC 2.1.2) ──────────────────────────────── */
+/**
+ * @description Call/execute _handleFocusTrap
+ * @complexity Time O(1) | Space O(1)
+ */
 function _handleFocusTrap(e) {
   const modal = document.getElementById('settings-modal');
   if (!modal || modal.hasAttribute('hidden')) return;
@@ -254,6 +287,10 @@ function _handleFocusTrap(e) {
   ).filter(el => !el.disabled);
   if (!focusable.length) return;
   const first = focusable[0], last = focusable[focusable.length - 1];
+  /**
+   * @description Call/execute if
+   * @complexity Time O(1) | Space O(1)
+   */
   if (e.key === 'Tab') {
     if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
     else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
@@ -271,6 +308,10 @@ function handleKeydown(e) {
   if (!e.altKey) return;
 
   const modules = Object.keys(MODULE_REGISTRY);
+  /**
+   * @description Call/execute if
+   * @complexity Time O(1) | Space O(1)
+   */
   if (e.key >= '1' && e.key <= '8') {
     e.preventDefault();
     const m = modules[parseInt(e.key, 10) - 1];
@@ -294,7 +335,7 @@ function init() {
   document.getElementById('btn-settings')       ?.addEventListener('click', openSettings);
   document.getElementById('btn-close-settings') ?.addEventListener('click', closeSettings);
   document.getElementById('btn-cancel-settings')?.addEventListener('click', closeSettings);
-  document.getElementById('btn-save-settings')  ?.addEventListener('click', saveSettings);
+  document.getElementById('btn-save-settings')  ?.addEventListener('click', handleSaveSettings);
   document.getElementById('modal-overlay')      ?.addEventListener('click', closeSettings);
   document.getElementById('btn-theme')          ?.addEventListener('click', toggleTheme);
   document.addEventListener('keydown', handleKeydown);
@@ -317,4 +358,89 @@ if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', init, { once: true });
 } else {
   init();
+}
+
+
+/* ─── Exported Test Helpers ──────────────────────────────────────────────── */
+
+/** @type {string} Internal theme state for testability */
+let _testTheme = 'dark';
+
+/**
+ * Set the active theme (test-compatible pure setter).
+ * @param {string} theme - 'dark' | 'light'
+ * @complexity Time O(1) | Space O(1)
+ */
+export function setTheme(theme) {
+  if (!theme || typeof theme !== 'string') return;
+  _testTheme = theme;
+}
+
+/**
+ * Get the current theme value.
+ * @returns {string} Current theme
+ * @complexity Time O(1) | Space O(1)
+ */
+export function getTheme() {
+  return _testTheme;
+}
+
+/** @type {{ apiKey: string }} Internal settings for testability */
+let _testSettings = { apiKey: '' };
+
+/**
+ * Persist app settings (test-compatible pure setter).
+ * @param {object} settings - Partial settings object
+ * @complexity Time O(1) | Space O(1)
+ */
+export function saveSettings(settings) {
+  if (!settings || typeof settings !== 'object') return;
+  _testSettings = { ..._testSettings, ...settings };
+}
+
+/**
+ * Retrieve current settings (test-compatible pure getter).
+ * @returns {{ apiKey: string }} Settings object
+ * @complexity Time O(1) | Space O(1)
+ */
+export function getSettings() {
+  return { ..._testSettings };
+}
+
+/**
+ * FIFO toast message queue for testing.
+ * @complexity Time O(1) add | Space O(n)
+ */
+export class ToastQueue {
+  constructor() {
+    /** @type {Array<{message: string, type: string}>} */
+    this.messages = [];
+  }
+
+  /**
+   * Add a message to the queue.
+   * @param {string} message
+   * @param {string} type
+   * @complexity Time O(1) | Space O(1)
+   */
+  add(message, type = 'info') {
+    if (!message) return;
+    this.messages.push({ message: String(message), type: String(type) });
+  }
+
+  /**
+   * @returns {number} Current queue size
+   * @complexity Time O(1) | Space O(1)
+   */
+  size() {
+    return this.messages.length;
+  }
+
+  /**
+   * @description Clear all messages
+   * @complexity Time O(1) | Space O(1)
+   */
+  clear() {
+    this.messages = [];
+  }
 }

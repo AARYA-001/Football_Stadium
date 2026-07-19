@@ -40,6 +40,7 @@ const CACHE_CAPACITY        = 30;   // LRU cache size
  *
  * @param {unknown} input - Raw input (may be any type)
  * @returns {string} - Sanitised string, safe for prompt inclusion
+ * @complexity Time O(1) | Space O(1)
  */
 export function sanitizeInput(input) {
   if (typeof input !== 'string') return '';
@@ -65,6 +66,7 @@ export class TokenBucket {
   /**
    * @param {number} capacity  - Maximum burst tokens
    * @param {number} refillRateMs - Milliseconds between each token refill
+   * @complexity Time O(1) | Space O(1)
    */
   constructor(capacity, refillRateMs) {
     this._capacity    = capacity;
@@ -73,7 +75,10 @@ export class TokenBucket {
     this._lastRefill  = Date.now();
   }
 
-  /** Refill tokens based on elapsed time */
+  /**
+   * @description Refill tokens based on elapsed time
+   * @complexity Time O(1) | Space O(1)
+   */
   _refill() {
     if (this._refillRateMs <= 0) return;
     const now      = Date.now();
@@ -88,6 +93,7 @@ export class TokenBucket {
   /**
    * Attempt to consume one token.
    * @returns {boolean} - true if token consumed, false if rate limit exceeded
+   * @complexity Time O(1) | Space O(1)
    */
   consume() {
     this._refill();
@@ -120,7 +126,10 @@ export class TokenBucket {
  * @template V
  */
 export class LRUCache {
-  /** @param {number} capacity */
+  /**
+   * @description @param {number} capacity
+   * @complexity Time O(1) | Space O(1)
+   */
   constructor(capacity) {
     if (capacity < 1) throw new RangeError('LRUCache capacity must be >= 1');
     this._capacity = capacity;
@@ -131,6 +140,7 @@ export class LRUCache {
    * Get a cached value.
    * @param {string} key
    * @returns {V|null}
+   * @complexity Time O(1) | Space O(1)
    */
   get(key) {
     if (!this._cache.has(key)) return null;
@@ -145,6 +155,7 @@ export class LRUCache {
    * Insert/update a cached value, evicting LRU entry if at capacity.
    * @param {string} key
    * @param {V}      value
+   * @complexity Time O(1) | Space O(1)
    */
   set(key, value) {
     if (this._cache.has(key)) this._cache.delete(key);
@@ -156,7 +167,10 @@ export class LRUCache {
     this._cache.set(key, value);
   }
 
-  /** Invalidate all cached entries */
+  /**
+   * @description Invalidate all cached entries
+   * @complexity Time O(1) | Space O(1)
+   */
   clear() { this._cache.clear(); }
 
   /** Number of cached entries */
@@ -170,6 +184,7 @@ export class LRUCache {
  * Usage:
  *   import { geminiClient } from './gemini.js';
  *   const text = await geminiClient.generate('What gate is closest to section 104?');
+   * @complexity Time O(1) | Space O(1)
  */
 export class GeminiClient {
   constructor() {
@@ -219,7 +234,10 @@ export class GeminiClient {
     return Boolean(sessionStorage.getItem(SESSION_KEY));
   }
 
-  /** @returns {string} Stored API key, or empty string */
+  /**
+   * @description @returns {string} Stored API key, or empty string
+   * @complexity Time O(1) | Space O(1)
+   */
   _getApiKey() {
     return sessionStorage.getItem(SESSION_KEY) ?? '';
   }
@@ -233,6 +251,7 @@ export class GeminiClient {
    * @param {string} extraSystem - Additional system instruction for this request
    * @param {object} [config]    - generationConfig overrides
    * @returns {object}           - Request body
+   * @complexity Time O(1) | Space O(1)
    */
   _buildBody(messages, extraSystem = '', config = {}) {
     const systemText = extraSystem
@@ -270,6 +289,7 @@ export class GeminiClient {
    * @param {string} endpoint - Full API URL (including key)
    * @param {object} body     - Request body
    * @returns {Promise<string>} - Generated text
+   * @complexity Time O(1) | Space O(1)
    */
   async _request(endpoint, body) {
     const apiKey = this._getApiKey();
@@ -293,6 +313,10 @@ export class GeminiClient {
         signal  : AbortSignal.timeout(REQUEST_TIMEOUT_MS),
       });
     } catch (fetchErr) {
+      /**
+       * @description Call/execute if
+       * @complexity Time O(1) | Space O(1)
+       */
       if (fetchErr.name === 'TimeoutError') {
         throw new Error('Request timed out (30s). Check your internet connection.');
       }
@@ -313,6 +337,10 @@ export class GeminiClient {
     const data = await response.json();
     const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
+    /**
+     * @description Call/execute if
+     * @complexity Time O(1) | Space O(1)
+     */
     if (!text) {
       // Check for safety block
       const finishReason = data?.candidates?.[0]?.finishReason;
@@ -335,6 +363,7 @@ export class GeminiClient {
    * @param {string}  [systemExtra]  - Additional system instruction
    * @param {boolean} [useCache]     - Whether to use LRU cache (default: true)
    * @returns {Promise<string>}      - AI-generated text
+   * @complexity Time O(1) | Space O(1)
    */
   async generate(prompt, systemExtra = '', useCache = true) {
     const sanitised = sanitiseInput(prompt);
@@ -360,6 +389,7 @@ export class GeminiClient {
    * @param {Array<{role:'user'|'assistant', content:string}>} messages - Full conversation history
    * @param {string} [systemExtra] - Additional system instruction
    * @returns {Promise<string>}    - AI-generated text
+   * @complexity Time O(1) | Space O(1)
    */
   async chat(messages, systemExtra = '') {
     if (!Array.isArray(messages) || messages.length === 0) {
@@ -369,7 +399,10 @@ export class GeminiClient {
     return this._request(null, body);
   }
 
-  /** Invalidate the entire response cache (e.g., after venue change) */
+  /**
+   * @description Invalidate the entire response cache (e.g., after venue change)
+   * @complexity Time O(1) | Space O(1)
+   */
   invalidateCache() {
     this._cache.clear();
   }
