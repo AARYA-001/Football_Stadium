@@ -23,7 +23,7 @@
 
 /* ─── Constants ──────────────────────────────────────────────────────────── */
 const API_BASE_URL  = 'https://generativelanguage.googleapis.com/v1beta/models';
-const MODEL_ID      = 'gemini-2.0-flash';
+const MODEL_ID      = 'gemini-1.5-flash';
 const SESSION_KEY   = 'stadiumiq_api_key';
 const MAX_PROMPT_LEN = 3000;   // characters — prevents runaway token use
 const REQUEST_TIMEOUT_MS = 30_000; // 30 s timeout per request

@@ -260,19 +260,22 @@ export class DashboardModule {
     const hotspot   = this._data.alerts.find(a => a.severity === 'warning');
 
     const prompt = [
-      `Generate a concise FIFA World Cup 2026 match-day operations briefing for stadium command staff.`,
-      `Venue: ${venueName}`,
-      `Match: ${match.home} vs ${match.away} | Score: ${match.score} | Minute: ${match.minute}`,
-      `Attendance: ${attendance.current.toLocaleString()} / ${attendance.capacity.toLocaleString()} (${Math.round(attendance.current/attendance.capacity*100)}%)`,
-      hotspot ? `Active alert: ${hotspot.msg}` : '',
-      `Temperature: ${this._data.temp}°C, partly cloudy.`,
+      `Generate a FIFA World Cup 2026 Match Day Operations Briefing for stadium command staff.`,
       ``,
-      `Provide exactly 3 sections:`,
-      `1. **Top 3 Priority Actions (next 30 min)** — concrete, numbered steps`,
-      `2. **Safety Concerns** — crowd safety risks or environmental hazards`,
-      `3. **Fan Experience Notes** — one positive observation and one improvement`,
+      `VENUE: ${venueName}`,
+      `MATCH: ${match.home} vs ${match.away} | Score: ${match.score} | Minute: ${match.minute}`,
+      `ATTENDANCE: ${attendance.current.toLocaleString()} / ${attendance.capacity.toLocaleString()} (${Math.round(attendance.current/attendance.capacity*100)}% capacity)`,
+      `CONDITIONS: ${this._data.temp}°C, partly cloudy, UV Index 5`,
+      hotspot ? `ACTIVE ALERT: ${hotspot.msg}` : '',
+      `CONTEXT: International fans from 50+ nations; multilingual support active; accessible services at 85%`,
       ``,
-      `Be concise (max 200 words total). Use bullet points within each section.`,
+      `Provide exactly 4 sections:`,
+      `1. **🚨 Top Priority Actions (next 30 min)** — 3-5 concrete, numbered operational steps`,
+      `2. **🛡️ Safety & Crowd Concerns** — crowd safety risks, environmental hazards, gate hotspots`,
+      `3. **♿ Accessibility & Inclusion** — status of accessible services, any special needs alerts`,
+      `4. **🌟 Fan Experience** — one positive highlight and one improvement recommendation`,
+      ``,
+      `Be concise (max 220 words total). Use bullet points within each section. Professional tone.`,
     ].filter(Boolean).join('\n');
 
     try {
@@ -283,12 +286,13 @@ export class DashboardModule {
       el.appendChild(textEl);
       _typewrite(textEl, response, 12);
     } catch (err) {
+      console.error('[Dashboard] Gemini error:', err);
       el.innerHTML = '';
       const msgEl = document.createElement('p');
       msgEl.style.color = 'var(--text-muted)';
-      msgEl.textContent = err.message.includes('API key')
-        ? '⚙️ Enter your Gemini API key in Settings (⚙️) to see live AI briefings.'
-        : `⚠️ ${err.message}`;
+      msgEl.textContent = err.message.includes('API key') || err.message.includes('No API key')
+        ? '⚙️ Enter your Gemini API key in Settings (⚙️) to see live AI match-day briefings.'
+        : 'I\'m having trouble connecting right now. Please try again in a moment. 🔄';
       el.appendChild(msgEl);
     }
   }

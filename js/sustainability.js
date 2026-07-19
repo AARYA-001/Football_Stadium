@@ -48,6 +48,8 @@ export class SustainabilityModule {
     this._render();
     this._initCharts();
     this._startTicker();
+    // Auto-trigger AI eco insights on load for immediate FIFA WC 2026 sustainability value
+    setTimeout(() => this._getAIInsights(), 1000);
   }
 
   _render() {

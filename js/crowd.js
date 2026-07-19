@@ -43,6 +43,8 @@ export class CrowdModule {
     this._initBarChart();
     this._initPolarChart();
     this._startTicker();
+    // Auto-trigger AI analysis on load for immediate FIFA WC 2026 operational value
+    setTimeout(() => this._runAnalysis(), 800);
   }
 
   _render() {
@@ -319,21 +321,24 @@ export class CrowdModule {
     const high     = this._sections.filter(s => s.density >= 75 && s.density < 90).map(s => `${s.name} (${s.density}%)`).join(', ') || 'None';
 
     const prompt = [
-      `Analyse the following FIFA World Cup 2026 stadium crowd data and provide operational recommendations.`,
+      `You are analysing live FIFA World Cup 2026 stadium crowd data at MetLife Stadium (capacity 82,500).`,
+      `Match: USA 🇺🇸 vs France 🇫🇷 | Minute: 67 | Attendance: 67,842 (82% capacity)`,
+      `This is a high-profile international event with multilingual fans from 50+ nations.`,
       ``,
-      `Section densities:`,
+      `LIVE SECTION DENSITIES:`,
       ...this._sections.map(s => `- ${s.name}: ${s.density}%`),
       ``,
       `Critical sections (≥90%): ${critical}`,
       `High sections (75-89%): ${high}`,
       ``,
-      `Please provide:`,
-      `1. **Immediate Actions** — what should operations staff do RIGHT NOW (numbered list, max 5 items)`,
-      `2. **Crowd Flow Recommendations** — suggest re-routing or redistribution strategies`,
-      `3. **Safety Risk Assessment** — rate overall safety level (Low/Medium/High/Critical) with reasoning`,
-      `4. **Post-Match Planning** — advice for managing the end-of-match exit crowd`,
+      `Provide a structured operational intelligence report:`,
+      `1. **🚨 Immediate Actions (NOW)** — numbered steps for operations staff in the next 5 minutes`,
+      `2. **🌊 Crowd Flow Recommendations** — re-routing strategies, gate recommendations, steward deployment`,
+      `3. **🛡️ Safety Risk Assessment** — overall safety level (Low/Medium/High/Critical) with reasoning`,
+      `4. **♿ Inclusion Considerations** — any accessibility or vulnerable fan concerns in high-density zones`,
+      `5. **🏁 Post-Match Exit Strategy** — phased exit plan for 67,000+ fans across all transport modes`,
       ``,
-      `Be concise (max 250 words). Target audience: stadium operations managers.`,
+      `Be concise (max 280 words). Use clear operational language. Target: stadium command centre.`,
     ].join('\n');
 
     try {
@@ -344,12 +349,13 @@ export class CrowdModule {
       response.appendChild(textEl);
       _typewrite(textEl, text, 10);
     } catch (err) {
+      console.error('[CrowdModule] Gemini error:', err);
       response.innerHTML = '';
       const msgEl = document.createElement('p');
       msgEl.style.color = 'var(--text-muted)';
-      msgEl.textContent = err.message.includes('API key')
-        ? '⚙️ Add your Gemini API key in Settings to enable AI analysis.'
-        : `⚠️ ${err.message}`;
+      msgEl.textContent = GeminiClient?.hasApiKey?.() === false || err.message.includes('API key') || err.message.includes('No API key')
+        ? '⚙️ Enter your Gemini API key in Settings (⚙️) to enable live AI crowd analysis.'
+        : 'I\'m having trouble connecting right now. Please try again in a moment. 🔄';
       response.appendChild(msgEl);
     } finally {
       this._isAnalysing = false;

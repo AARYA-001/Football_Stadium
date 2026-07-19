@@ -430,12 +430,13 @@ export class OperationsModule {
       textEl.appendChild(outEl);
       _typewrite(outEl, text, 8);
     } catch (err) {
+      console.error('[Operations] Gemini report error:', err);
       textEl.innerHTML = '';
       const msgEl = document.createElement('p');
       msgEl.style.color = 'var(--text-muted)';
-      msgEl.textContent = err.message.includes('API key')
-        ? '⚙️ Add your Gemini API key in Settings to generate reports.'
-        : `⚠️ ${err.message}`;
+      msgEl.textContent = err.message.includes('API key') || err.message.includes('No API key')
+        ? '⚙️ Add your Gemini API key in Settings (⚙️) to generate operational intelligence reports.'
+        : 'I\'m having trouble connecting right now. Please try again in a moment. 🔄';
       textEl.appendChild(msgEl);
     }
   }
@@ -458,8 +459,12 @@ export class OperationsModule {
       const outEl = document.createElement('div'); outEl.className = 'ai-text'; textEl.appendChild(outEl);
       _typewrite(outEl, text, 10);
     } catch (err) {
-      textEl.innerHTML = ''; const msgEl = document.createElement('p'); msgEl.style.color = 'var(--text-muted)';
-      msgEl.textContent = err.message.includes('API key') ? '⚙️ Add API key in Settings.' : `⚠️ ${err.message}`;
+      console.error('[Operations] Gemini incident error:', err);
+      textEl.innerHTML = '';
+      const msgEl = document.createElement('p'); msgEl.style.color = 'var(--text-muted)';
+      msgEl.textContent = err.message.includes('API key') || err.message.includes('No API key')
+        ? '⚙️ Add your Gemini API key in Settings (⚙️).'
+        : 'I\'m having trouble connecting right now. Please try again in a moment. 🔄';
       textEl.appendChild(msgEl);
     }
   }
@@ -482,8 +487,12 @@ export class OperationsModule {
       const outEl = document.createElement('div'); outEl.className = 'ai-text'; textEl.appendChild(outEl);
       _typewrite(outEl, text, 10);
     } catch (err) {
-      textEl.innerHTML = ''; const msgEl = document.createElement('p'); msgEl.style.color = 'var(--text-muted)';
-      msgEl.textContent = err.message.includes('API key') ? '⚙️ Add API key in Settings.' : `⚠️ ${err.message}`;
+      console.error('[Operations] Gemini dispatch error:', err);
+      textEl.innerHTML = '';
+      const msgEl = document.createElement('p'); msgEl.style.color = 'var(--text-muted)';
+      msgEl.textContent = err.message.includes('API key') || err.message.includes('No API key')
+        ? '⚙️ Add your Gemini API key in Settings (⚙️).'
+        : 'I\'m having trouble connecting right now. Please try again in a moment. 🔄';
       textEl.appendChild(msgEl);
     }
   }
@@ -521,8 +530,12 @@ export class OperationsModule {
       this._messages.push({ role: 'assistant', content: reply });
       if (this._messages.length > 30) this._messages.splice(0, 2);
     } catch (err) {
+      console.error('[Operations Console] Gemini error:', err);
       this._removeTyping(typingId);
-      this._addMsg('assistant', `⚠️ ${err.message}`);
+      this._addMsg('assistant', err.message.includes('API key') || err.message.includes('No API key')
+        ? '⚙️ Please add your Gemini API key in Settings (⚙️) to enable the AI operations console.'
+        : 'I\'m having trouble connecting right now. Please try again in a moment. 🔄'
+      );
     } finally {
       this._chatLoading = false;
       if (sendBtn) sendBtn.disabled = false;

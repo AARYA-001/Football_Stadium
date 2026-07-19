@@ -264,12 +264,13 @@ export class TransportModule {
       textEl.appendChild(outEl);
       _typewrite(outEl, text, 10);
     } catch (err) {
+      console.error('[Transport] Gemini error:', err);
       textEl.innerHTML = '';
       const msgEl = document.createElement('p');
       msgEl.style.color = 'var(--text-muted)';
-      msgEl.textContent = err.message.includes('API key')
-        ? '⚙️ Add your Gemini API key in Settings.'
-        : `⚠️ ${err.message}`;
+      msgEl.textContent = err.message.includes('API key') || err.message.includes('No API key')
+        ? '⚙️ Add your Gemini API key in Settings (⚙️) to get AI departure recommendations.'
+        : 'I\'m having trouble connecting right now. Please try again in a moment. 🔄';
       textEl.appendChild(msgEl);
     }
   }
@@ -299,8 +300,12 @@ export class TransportModule {
       this._messages.push({ role: 'assistant', content: reply });
       if (this._messages.length > 20) this._messages.splice(0, 2);
     } catch (err) {
+      console.error('[Transport Chat] Gemini error:', err);
       this._removeTyping(typingId);
-      this._addMsg('assistant', `⚠️ ${err.message}`);
+      this._addMsg('assistant', err.message.includes('API key') || err.message.includes('No API key')
+        ? '⚙️ Please enter your Gemini API key in Settings (⚙️) to enable AI transport advice.'
+        : 'I\'m having trouble connecting right now. Please try again in a moment. 🔄'
+      );
     } finally {
       this._chatLoading = false;
       if (sendBtn) sendBtn.disabled = false;

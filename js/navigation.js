@@ -71,8 +71,9 @@ export class NavigationModule {
     this._bindEvents();
     this._addMessage('assistant',
       `🗺️ Welcome to Smart Navigation at **${this._venueConfig.name}**!\n\n` +
-      `I can help you find gates, restrooms, food, first aid, accessible facilities, and transport.\n\n` +
-      `Try a quick action below or type your question in any language.`
+      `I'm powered by Gemini AI and know your venue inside-out for FIFA World Cup 2026.\n\n` +
+      `I can help you find gates, restrooms, food, first aid, accessible facilities, transport, and more — in any language.\n\n` +
+      `Try a quick action below or type your question.`
     );
   }
 
@@ -190,7 +191,15 @@ export class NavigationModule {
     const sendBtn  = document.getElementById('nav-send');
     if (sendBtn) sendBtn.disabled = true;
 
-    const sysExtra = `Venue: ${this._venueConfig.name}. Focus on physical navigation, directions, and facility locations. Reference gate numbers, section numbers, and concourse names where possible.`;
+    const sysExtra = [
+      `Venue: ${this._venueConfig.name} — FIFA World Cup 2026 host stadium.`,
+      `Location: ${this._venueConfig.lat.toFixed(4)}, ${this._venueConfig.lng.toFixed(4)}.`,
+      `Focus on physical navigation, step-by-step directions, and exact facility locations.`,
+      `Reference gate numbers (N1, N2, S1, E1, W1), section numbers (100-400 range), and concourse names.`,
+      `Stadium has accessible routes, hearing loops, sensory rooms, and multilingual signage.`,
+      `If the user writes in another language, respond in the same language.`,
+      `Current match: USA 🇺🇸 vs France 🇫🇷 — high attendance expected, Gate E1 is busy.`,
+    ].join(' ');
 
     try {
       const reply = await geminiClient.chat(this._messages, sysExtra);
@@ -200,8 +209,12 @@ export class NavigationModule {
       // Trim history to cap token usage (keep last 10 turns)
       if (this._messages.length > 20) this._messages.splice(0, 2);
     } catch (err) {
+      console.error('[Navigation] Gemini error:', err);
       this._removeTyping(typingId);
-      this._addMessage('assistant', `⚠️ ${err.message}`);
+      this._addMessage('assistant', err.message.includes('API key') || err.message.includes('No API key')
+        ? '⚙️ Please enter your Gemini API key in Settings (⚙️) to enable AI-powered wayfinding.'
+        : 'I\'m having trouble connecting right now. Please try again in a moment. 🔄'
+      );
     } finally {
       this._isLoading = false;
       if (sendBtn) sendBtn.disabled = false;

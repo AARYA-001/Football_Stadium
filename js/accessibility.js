@@ -364,12 +364,13 @@ export class AccessibilityModule {
       resultEl.appendChild(textEl);
       _typewrite(textEl, text, 10);
     } catch (err) {
+      console.error('[Accessibility] Route error:', err);
       resultEl.innerHTML = '';
       const msgEl = document.createElement('p');
       msgEl.style.color = 'var(--text-muted)';
-      msgEl.textContent = err.message.includes('API key')
-        ? '⚙️ Add your Gemini API key in Settings to generate accessible routes.'
-        : `⚠️ ${err.message}`;
+      msgEl.textContent = err.message.includes('API key') || err.message.includes('No API key')
+        ? '⚙️ Add your Gemini API key in Settings (⚙️) to generate accessible routes.'
+        : 'I\'m having trouble connecting right now. Please try again in a moment. 🔄';
       resultEl.appendChild(msgEl);
     }
   }
@@ -415,12 +416,13 @@ export class AccessibilityModule {
       resultEl.appendChild(textEl);
       _typewrite(textEl, text, 8);
     } catch (err) {
+      console.error('[Accessibility] Audio description error:', err);
       resultEl.innerHTML = '';
       const msgEl = document.createElement('p');
       msgEl.style.color = 'var(--text-muted)';
-      msgEl.textContent = err.message.includes('API key')
-        ? '⚙️ Add your Gemini API key in Settings to generate audio descriptions.'
-        : `⚠️ ${err.message}`;
+      msgEl.textContent = err.message.includes('API key') || err.message.includes('No API key')
+        ? '⚙️ Add your Gemini API key in Settings (⚙️) to generate audio descriptions.'
+        : 'I\'m having trouble connecting right now. Please try again in a moment. 🔄';
       resultEl.appendChild(msgEl);
     }
   }
@@ -453,8 +455,12 @@ export class AccessibilityModule {
       this._accMessages.push({ role: 'assistant', content: reply });
       if (this._accMessages.length > 20) this._accMessages.splice(0, 2);
     } catch (err) {
+      console.error('[Accessibility Chat] Gemini error:', err);
       this._removeTyping(typingId);
-      this._addChatMsg('assistant', `⚠️ ${err.message}`);
+      this._addChatMsg('assistant', err.message.includes('API key') || err.message.includes('No API key')
+        ? '⚙️ Please add your Gemini API key in Settings (⚙️) to enable AI accessibility support.'
+        : 'I\'m having trouble connecting right now. Please try again in a moment. 🔄'
+      );
     } finally {
       this._chatLoading = false;
       if (sendBtn) sendBtn.disabled = false;
