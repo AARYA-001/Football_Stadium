@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="StadiumIQ — FIFA World Cup 2026 GenAI Operations Platform empowering fans, staff, volunteers and organizers with real-time AI intelligence." />
+  <meta name="theme-color" content="#0a0e1a" />
+  <meta name="robots" content="noindex" />
+
+  <!-- Content Security Policy — prevents XSS, restricts origins -->
+  <meta http-equiv="Content-Security-Policy"
+    content="
+      default-src 'self';
+      script-src 'self' https://cdn.jsdelivr.net https://unpkg.com;
+      style-src 'self' https://fonts.googleapis.com 'unsafe-inline';
+      font-src https://fonts.gstatic.com;
+      connect-src 'self' https://generativelanguage.googleapis.com;
+      img-src 'self' data: https://*.tile.openstreetmap.org https://unpkg.com;
+      worker-src 'none';
+      object-src 'none';
+      base-uri 'self';
+      form-action 'none';
+    " />
+
+  <title>StadiumIQ — FIFA World Cup 2026 GenAI Platform</title>
+
+  <!-- Performance: Preconnect to external origins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+  <!-- Typography: Inter (body) + Orbitron (brand/display) -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Orbitron:wght@700;900&display=swap" rel="stylesheet" />
+
+  <!-- Leaflet map CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <!-- Application stylesheet -->
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body data-theme="dark">
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SKIP NAVIGATION — WCAG 2.1 SC 2.4.1 (Bypass Blocks)
+  ═══════════════════════════════════════════════════════════ -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       APPLICATION HEADER
+  ═══════════════════════════════════════════════════════════ -->
+  <header class="app-header" role="banner">
+    <div class="header-inner">
+      <!-- Brand -->
+      <a class="brand" href="#" aria-label="StadiumIQ — FIFA World Cup 2026 home">
+        <span class="brand-icon" aria-hidden="true">🏟️</span>
+        <div class="brand-text">
+          <span class="brand-name">Stadium<span class="brand-accent">IQ</span></span>
+          <span class="brand-tagline">FIFA World Cup 2026</span>
+        </div>
+      </a>
+
+      <!-- Header Controls -->
+      <div class="header-controls" role="toolbar" aria-label="Application controls">
+        <div class="live-indicator" role="status" aria-label="Match status: Live">
+          <span class="pulse-dot" aria-hidden="true"></span>
+          <span class="live-text">LIVE</span>
+        </div>
+
+        <button id="btn-theme" class="icon-btn" aria-label="Switch to light theme" title="Toggle theme (Alt+T)">
+          <span aria-hidden="true" id="theme-icon">☀️</span>
+        </button>
+
+        <button id="btn-settings" class="icon-btn" aria-label="Open application settings" title="Settings (Alt+S)">
+          <span aria-hidden="true">⚙️</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SETTINGS MODAL (accessible <dialog> element)
+  ═══════════════════════════════════════════════════════════ -->
+  <div id="modal-overlay" class="modal-overlay" hidden aria-hidden="true"></div>
+  <div id="settings-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="settings-title" hidden>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="settings-title" class="modal-title">⚙️ Settings</h2>
+        <button id="btn-close-settings" class="icon-btn" aria-label="Close settings dialog">✕</button>
+      </div>
+
+      <div class="settings-body">
+        <!-- API Key -->
+        <div class="form-group">
+          <label for="api-key-input" class="form-label">
+            🔑 Gemini API Key
+          </label>
+          <input
+            type="password"
+            id="api-key-input"
+            class="form-input"
+            placeholder="AIza••••••••••••••••••••••••••••••••"
+            autocomplete="off"
+            spellcheck="false"
+            maxlength="200"
+            aria-describedby="api-key-hint"
+          />
+          <small id="api-key-hint" class="form-hint">
+            🔒 Stored in <strong>session memory only</strong> — never written to disk, cleared when you close the tab.
+          </small>
+        </div>
+
+        <!-- Venue -->
+        <div class="form-group">
+          <label for="venue-select" class="form-label">🏟️ Active Venue</label>
+          <select id="venue-select" class="form-select" aria-describedby="venue-hint">
+            <option value="metlife">MetLife Stadium — East Rutherford, NJ</option>
+            <option value="atandt">AT&amp;T Stadium — Arlington, TX</option>
+            <option value="sofi">SoFi Stadium — Inglewood, CA</option>
+            <option value="levis">Levi's Stadium — Santa Clara, CA</option>
+            <option value="gillette">Gillette Stadium — Foxborough, MA</option>
+            <option value="lumen">Lumen Field — Seattle, WA</option>
+            <option value="bcplace">BC Place — Vancouver, Canada</option>
+            <option value="azteca">Estadio Azteca — Mexico City, Mexico</option>
+          </select>
+          <small id="venue-hint" class="form-hint">AI responses are contextualised for the selected venue.</small>
+        </div>
+
+        <!-- Role -->
+        <div class="form-group">
+          <label for="role-select" class="form-label">👤 Your Role</label>
+          <select id="role-select" class="form-select">
+            <option value="fan">Fan / Visitor</option>
+            <option value="staff">Venue Staff</option>
+            <option value="volunteer">Volunteer</option>
+            <option value="organizer">Organizer / Official</option>
+            <option value="media">Media / Press</option>
+            <option value="accessibility">Visitor with Disability</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button id="btn-save-settings" class="btn-primary">💾 Save Settings</button>
+        <button id="btn-cancel-settings" class="btn-secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       MAIN NAVIGATION
+  ═══════════════════════════════════════════════════════════ -->
+  <nav class="app-nav" role="navigation" aria-label="Application modules">
+    <ul class="nav-list" role="list">
+      <li role="listitem">
+        <button class="nav-btn active" data-module="dashboard" aria-current="page"
+          aria-label="Dashboard — match day overview and AI briefings" title="Dashboard (Alt+1)">
+          <span class="nav-icon" aria-hidden="true">📊</span>
+          <span class="nav-label">Dashboard</span>
+        </button>
+      </li>
+      <li role="listitem">
+        <button class="nav-btn" data-module="navigation"
+          aria-label="Smart Navigation — AI-powered stadium wayfinding" title="Navigate (Alt+2)">
+          <span class="nav-icon" aria-hidden="true">🗺️</span>
+          <span class="nav-label">Navigate</span>
+        </button>
+      </li>
+      <li role="listitem">
+        <button class="nav-btn" data-module="crowd"
+          aria-label="Crowd Intelligence — real-time density and flow analysis" title="Crowd (Alt+3)">
+          <span class="nav-icon" aria-hidden="true">👥</span>
+          <span class="nav-label">Crowd</span>
+        </button>
+      </li>
+      <li role="listitem">
+        <button class="nav-btn" data-module="assistant"
+          aria-label="Multilingual AI Assistant — support in 10+ languages" title="Assistant (Alt+4)">
+          <span class="nav-icon" aria-hidden="true">🌍</span>
+          <span class="nav-label">Assistant</span>
+        </button>
+      </li>
+      <li role="listitem">
+        <button class="nav-btn" data-module="accessibility"
+          aria-label="Accessibility Companion — inclusive stadium services" title="Accessibility (Alt+5)">
+          <span class="nav-icon" aria-hidden="true">♿</span>
+          <span class="nav-label">Access</span>
+        </button>
+      </li>
+      <li role="listitem">
+        <button class="nav-btn" data-module="transport"
+          aria-label="Transport Hub — arrivals, departures and route planning" title="Transport (Alt+6)">
+          <span class="nav-icon" aria-hidden="true">🚌</span>
+          <span class="nav-label">Transport</span>
+        </button>
+      </li>
+      <li role="listitem">
+        <button class="nav-btn" data-module="sustainability"
+          aria-label="Sustainability — eco metrics and green initiatives" title="Green (Alt+7)">
+          <span class="nav-icon" aria-hidden="true">🌱</span>
+          <span class="nav-label">Green</span>
+        </button>
+      </li>
+      <li role="listitem">
+        <button class="nav-btn" data-module="operations"
+          aria-label="Operations Command — staff and incident management" title="Ops (Alt+8)">
+          <span class="nav-icon" aria-hidden="true">🎯</span>
+          <span class="nav-label">Ops</span>
+        </button>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       MAIN CONTENT AREA
+  ═══════════════════════════════════════════════════════════ -->
+  <main id="main-content" class="app-main" role="main" aria-label="Application content">
+    <div id="module-container" class="module-container" aria-live="polite" aria-busy="false"></div>
+  </main>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       TOAST NOTIFICATIONS (ARIA live region)
+  ═══════════════════════════════════════════════════════════ -->
+  <div
+    id="toast-container"
+    class="toast-container"
+    role="log"
+    aria-live="polite"
+    aria-atomic="false"
+    aria-relevant="additions"
+    aria-label="Notifications"
+  ></div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       THIRD-PARTY SCRIPTS (CDN)
+       NOTE: In production, add integrity="sha384-..." crossorigin="anonymous"
+       for SRI (Subresource Integrity) verification on each script.
+  ═══════════════════════════════════════════════════════════ -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Application entry point (ES6 module — strict mode, no global scope pollution) -->
+  <script type="module" src="js/app.js"></script>
+
+</body>
+</html>
